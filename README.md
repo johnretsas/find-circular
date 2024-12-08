@@ -69,5 +69,3 @@ A minimal Node.js boilerplate using TypeScript, Axios, ESLint, and other modern 
 ## License
 
 MIT License
-
----
