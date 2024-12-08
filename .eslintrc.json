@@ -1,0 +1,34 @@
+{
+    "env": {
+      "node": true,                // Node.js global variables.
+      "es2021": true               // Latest ECMAScript features.
+    },
+    "parser": "@typescript-eslint/parser", // Use the TypeScript parser.
+    "parserOptions": {
+      "ecmaVersion": "latest",     // Use the latest ECMAScript syntax.
+      "sourceType": "module"       // Support ES module imports.
+    },
+    "extends": [
+      "eslint:recommended",        // Use recommended ESLint rules.
+      "plugin:@typescript-eslint/recommended" // Add TypeScript-specific rules.
+    ],
+    "plugins": ["@typescript-eslint"], // Enable the TypeScript plugin.
+    "rules": {
+      "semi": ["error", "always"],       // Enforce semicolons.
+      "quotes": ["error", "single"],     // Enforce single quotes.
+      "no-unused-vars": "off",          // Turn off, handled by TypeScript.
+      "@typescript-eslint/no-unused-vars": ["warn"], // Warn about unused vars.
+      "indent": ["error", 2],            // Enforce 2-space indentation.
+      "comma-dangle": ["error", "never"] // No trailing commas.
+    },
+    "ignorePatterns": ["dist/", "node_modules/"], // Ignore build and dependency files.
+    "overrides": [
+      {
+        "files": ["*.ts"],
+        "rules": {
+          "@typescript-eslint/explicit-module-boundary-types": "off" // Optional typing.
+        }
+      }
+    ]
+  }
+  

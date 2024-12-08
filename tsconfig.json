@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",                // Target latest JavaScript features.
+      "module": "ESNext",                // Use ES module system.
+      "moduleResolution": "Node",       // Resolve modules like Node.js.
+      "strict": true,                   // Enable strict type-checking.
+      "esModuleInterop": true,          // Allow default imports from CommonJS.
+      "skipLibCheck": true,             // Skip type checking of declaration files.
+      "forceConsistentCasingInFileNames": true, // Ensure consistent casing in imports.
+      "outDir": "./dist",               // Output directory for compiled files.
+      "rootDir": "./src",               // Root directory for source files.
+      "declaration": true,              // Emit type declaration files.
+      "resolveJsonModule": true,        // Support importing JSON modules.
+      "allowSyntheticDefaultImports": true, // Support default imports in modules.
+      "isolatedModules": true           // Ensure compatibility with ESM.
+    },
+    "include": ["src/**/*"],           // Include all TypeScript files in src.
+    "exclude": ["node_modules", "dist"] // Exclude unnecessary directories.
+  }
+  
