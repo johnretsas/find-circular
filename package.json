@@ -35,5 +35,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "@johnretsas:registry": "https://npm.pkg.github.com"
+  }
 }
