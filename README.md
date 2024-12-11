@@ -18,10 +18,9 @@ obj.self = obj;
 
 console.log(findCircular(obj));
 // Output: { a: 1, self: "[Circular]" }
-
+```
 ## GitHub Repository
 
 You can find the source code and contribute to the project on GitHub:
 
-[find-circular GitHub Repository](https://github.com/johnretsas/find-circular)
-```
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/johnretsas/find-circular)
