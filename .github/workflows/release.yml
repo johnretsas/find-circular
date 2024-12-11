@@ -1,0 +1,38 @@
+name: Release to NPM
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushing to the main branch
+    tags:
+      - "v*" # Trigger on tags like v1.0.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16" # Use a Node.js version that suits your project
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build # Run the build command to compile TypeScript to JS
+
+      - name: Run tests
+        run: npm test # Optionally run your tests here
+
+      - name: Configure npm for publishing
+        run: npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
