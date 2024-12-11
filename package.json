@@ -1,25 +1,30 @@
 {
-  "name": "hubspot-test",
-  "version": "1.0.0",
+  "name": "find-circular",
+  "version": "1.0.1",
   "main": "index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "node build.js",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "jest"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["circular", "object", "utility"],
+  "author": "John Retsas",
   "type": "module",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "Utility to find circular references in objects and return the object with circular references handled and replaced with a string representation.",
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "esbuild": "^0.24.0",
     "eslint": "^8.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0"
