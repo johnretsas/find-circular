@@ -36,7 +36,11 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "@johnretsas:registry": "https://npm.pkg.github.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnretsas/find-circular.git"
+  },
+  "bugs": {
+    "url": "https://github.com/johnretsas/find-circular/issues"
   }
 }
