@@ -24,4 +24,4 @@ console.log(findCircular(obj));
 You can find the source code and contribute to the project on GitHub:
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/johnretsas/find-circular)
-[![NPM](https://www.npmjs.com/package/find-circular)]
+[![npm](https://www.npmjs.com/package/find-circular)]
