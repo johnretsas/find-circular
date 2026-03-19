@@ -1,8 +1,12 @@
 import { build } from "esbuild";
 
-build({
+const shared = {
   entryPoints: ["./src/index.ts"],
   bundle: true,
-  outfile: "./dist/index.js",
-  resolveExtensions: [".ts", ".tsx", ".js", ".json"], // Automatically resolve extensions
-}).catch(() => process.exit(1));
+  resolveExtensions: [".ts", ".tsx", ".js", ".json"],
+};
+
+await Promise.all([
+  build({ ...shared, format: "esm", outfile: "./dist/index.js" }),
+  build({ ...shared, format: "cjs", outfile: "./dist/index.cjs" }),
+]);
