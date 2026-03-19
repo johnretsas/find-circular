@@ -1,6 +1,6 @@
 {
   "name": "find-circular",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
