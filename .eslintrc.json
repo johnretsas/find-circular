@@ -19,7 +19,7 @@
       "no-unused-vars": "off",          // Turn off, handled by TypeScript.
       "@typescript-eslint/no-unused-vars": ["warn"], // Warn about unused vars.
       "indent": ["error", 2],            // Enforce 2-space indentation.
-      "comma-dangle": ["error", "never"] // No trailing commas.
+      "comma-dangle": "off"              // Let formatter handle commas.
     },
     "ignorePatterns": ["dist/", "node_modules/"], // Ignore build and dependency files.
     "overrides": [

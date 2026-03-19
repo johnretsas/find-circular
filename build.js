@@ -3,7 +3,7 @@ import { build } from "esbuild";
 const shared = {
   entryPoints: ["./src/index.ts"],
   bundle: true,
-  resolveExtensions: [".ts", ".tsx", ".js", ".json"]
+  resolveExtensions: [".ts", ".tsx", ".js", ".json"],
 };
 
 await Promise.all([
