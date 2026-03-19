@@ -1,6 +1,11 @@
 src/
 tests/
+test-app/
+node_modules/
 tsconfig.json
 jest.config.js
-node_modules/
-test-app/
+.eslintrc.json
+build.js
+release.sh
+.github/
+CHANGELOG.md
