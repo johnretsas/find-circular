@@ -13,7 +13,7 @@ describe("findCircular", () => {
   });
 
   it('should replace circular references with "[Circular]"', () => {
-    const obj: any = { a: 1 };
+    const obj: Record<any, any> = { a: 1 };
     obj.b = obj;
     expect(findCircular(obj)).toEqual({ a: 1, b: "[Circular]" });
   });
@@ -125,14 +125,12 @@ describe("findCircular", () => {
     arr.push(arr[1]); // Duplicate
     expect(findCircular(arr)).toEqual([1, 2, "[Circular]", 2]);
   });
-  
 
   it("should handle deeply nested arrays with circular references", () => {
     const arr: any[] = [[[[42]]]];
     arr[0][0][0].push(arr); // Circular
     expect(findCircular(arr)).toEqual([[[[42, "[Circular]"]]]]);
   });
-  
 
   it("should handle complex cyclic graphs", () => {
     const obj: any = { a: { b: { c: {} } } };
@@ -149,14 +147,12 @@ describe("findCircular", () => {
       },
     });
   });
-  
 
   it("should handle circular references in arrays of objects", () => {
     const arr: any[] = [{ x: 1 }, { y: 2 }];
     arr[1].z = arr; // Circular reference
     expect(findCircular(arr)).toEqual([{ x: 1 }, { y: 2, z: "[Circular]" }]);
   });
-
 
   it("should handle cross-referencing objects", () => {
     const obj: any = { a: {}, b: {} };
@@ -167,18 +163,16 @@ describe("findCircular", () => {
       b: { a: { b: "[Circular]" } },
     });
   });
-  
+
   it("should handle objects with undefined values", () => {
     const obj = { a: undefined, b: 42 };
     expect(findCircular(obj)).toEqual({ a: undefined, b: 42 });
   });
-  
 
   it("should handle empty objects and arrays", () => {
     expect(findCircular({})).toEqual({});
     expect(findCircular([])).toEqual([]);
   });
-  
 
   it("should handle circular references with symbol keys", () => {
     const sym = Symbol("key");
@@ -188,7 +182,7 @@ describe("findCircular", () => {
       [sym]: { self: "[Circular]" },
     });
   });
-  
+
   it("should handle deeply nested mixtures of objects and arrays with circular references", () => {
     const obj: any = {
       a: [{ b: { c: [{}] } }],
@@ -204,6 +198,4 @@ describe("findCircular", () => {
     const obj = { a: func, b: { c: func } };
     expect(findCircular(obj)).toEqual({ a: func, b: { c: func } });
   });
-  
-  
 });
