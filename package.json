@@ -50,5 +50,8 @@
   },
   "bugs": {
     "url": "https://github.com/johnretsas/find-circular/issues"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
