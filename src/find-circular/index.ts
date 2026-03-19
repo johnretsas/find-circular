@@ -1,45 +1,40 @@
 export function findCircular(
-  obj: any,
+  obj: unknown,
   seen = new WeakSet(),
-  path: any[] = []
-): any {
+  path = new Set<object>(),
+): unknown {
   if (obj === null || typeof obj !== "object") {
-    return obj; // Base case: leave primitives unchanged
+    return obj;
   }
 
-  // Check for circular reference
-  if (path.includes(obj)) {
+  if (path.has(obj)) {
     return "[Circular]";
   }
 
-  // Check if object has been seen before
   if (seen.has(obj)) {
-    // Duplicate reference: return a full copy (not [Circular])
-    const result = Array.isArray(obj)
-      ? ([] as { [key: string | symbol]: any })
-      : {};
+    const result = (Array.isArray(obj) ? [] : {}) as Record<string | symbol, unknown>;
+    path.add(obj);
     for (const key of [
-      ...Object.keys(obj), // Include string keys
-      ...Object.getOwnPropertySymbols(obj), // Include symbol keys
+      ...Object.keys(obj),
+      ...Object.getOwnPropertySymbols(obj),
     ]) {
-      result[key] = findCircular(obj[key], new WeakSet(), [...path, obj]);
+      result[key] = findCircular((obj as Record<string | symbol, unknown>)[key], new WeakSet(), path);
     }
+    path.delete(obj);
     return result;
   }
 
-  // Mark the current object as seen
   seen.add(obj);
 
-  // Recursively process properties
-  const result = Array.isArray(obj)
-    ? ([] as { [key: string | symbol]: any })
-    : {};
+  const result = (Array.isArray(obj) ? [] : {}) as Record<string | symbol, unknown>;
+  path.add(obj);
   for (const key of [
-    ...Object.keys(obj), // Include string keys
-    ...Object.getOwnPropertySymbols(obj), // Include symbol keys
+    ...Object.keys(obj),
+    ...Object.getOwnPropertySymbols(obj),
   ]) {
-    result[key] = findCircular(obj[key], seen, [...path, obj]);
+    result[key] = findCircular((obj as Record<string | symbol, unknown>)[key], seen, path);
   }
+  path.delete(obj);
 
   return result;
 }
