@@ -5,6 +5,13 @@ type Configuration = {
 export function findCircular(
   obj: unknown,
   configuration: Configuration = { replaceToken: "[Circular]" },
+) {
+  return _findCircular(obj, configuration, new Set<object>());
+}
+
+function _findCircular(
+  obj: unknown,
+  configuration: Configuration = { replaceToken: "[Circular]" },
   path = new Set<object>(),
 ): unknown {
   if (obj === null || typeof obj !== "object") {
@@ -26,7 +33,7 @@ export function findCircular(
     ...Object.keys(obj),
     ...Object.getOwnPropertySymbols(obj),
   ]) {
-    result[key] = findCircular(
+    result[key] = _findCircular(
       (obj as Record<string | symbol, unknown>)[key],
       configuration,
       path,
