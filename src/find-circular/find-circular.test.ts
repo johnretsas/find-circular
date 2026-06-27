@@ -128,7 +128,12 @@ describe("findCircular", () => {
     // thrid circular in the C branch pointing to the b that has the circular to the a
     obj.c.c3 = obj.b.b3;
 
-    console.log({ result: findCircular(obj) });
+    const result = findCircular(obj);
+    expect(result).toEqual({
+      a: { a1: 1, a2: 2, a3: "[Circular]" },
+      b: { b1: 1, b2: 1, b3: "[Circular]" },
+      c: { c1: 1, c2: 2, c3: "[Circular]" },
+    });
   });
 
   it("should handle circular references in objects within arrays", () => {
@@ -165,6 +170,7 @@ describe("findCircular", () => {
     const shared: any = { x: 42 };
     shared.self = shared;
     const obj = { a: shared, b: shared };
+
     expect(findCircular(obj)).toEqual({
       a: { x: 42, self: "[Circular]" },
       b: { x: 42, self: "[Circular]" },
@@ -175,12 +181,14 @@ describe("findCircular", () => {
     const arr: any[] = [1, 2];
     arr.push(arr); // Circular
     arr.push(arr[1]); // Duplicate
+
     expect(findCircular(arr)).toEqual([1, 2, "[Circular]", 2]);
   });
 
   it("should handle deeply nested arrays with circular references", () => {
     const arr: any[] = [[[[42]]]];
     arr[0][0][0].push(arr); // Circular
+
     expect(findCircular(arr)).toEqual([[[[42, "[Circular]"]]]]);
   });
 
@@ -188,6 +196,7 @@ describe("findCircular", () => {
     const obj: any = { a: { b: { c: {} } } };
     obj.a.b.c.d = obj.a.b; // Circular reference
     obj.a.b.c.e = obj.a; // Circular reference
+
     expect(findCircular(obj)).toEqual({
       a: {
         b: {
@@ -249,5 +258,20 @@ describe("findCircular", () => {
     const func = () => 42;
     const obj = { a: func, b: { c: func } };
     expect(findCircular(obj)).toEqual({ a: func, b: { c: func } });
+  });
+
+  it("should respect the replaceToken", () => {
+    const obj: any = { a: 1, b: { c: 2 } };
+    obj.b.d = obj;
+    obj.b.e = obj.b;
+    obj.e = obj;
+
+    const result = findCircular(obj, { replaceToken: "found circular" });
+
+    expect(result).toEqual({
+      a: 1,
+      b: { c: 2, d: "found circular", e: "found circular" },
+      e: "found circular",
+    });
   });
 });

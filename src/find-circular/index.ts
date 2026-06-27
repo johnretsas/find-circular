@@ -4,8 +4,8 @@ type Configuration = {
 
 export function findCircular(
   obj: unknown,
-  path = new Set<object>(),
   configuration: Configuration = { replaceToken: "[Circular]" },
+  path = new Set<object>(),
 ): unknown {
   if (obj === null || typeof obj !== "object") {
     return obj;
@@ -28,6 +28,7 @@ export function findCircular(
   ]) {
     result[key] = findCircular(
       (obj as Record<string | symbol, unknown>)[key],
+      configuration,
       path,
     );
   }
@@ -36,5 +37,3 @@ export function findCircular(
 
   return result;
 }
-
-console.log(findCircular(obj));
