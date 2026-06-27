@@ -73,10 +73,62 @@ describe("findCircular", () => {
     });
   });
 
+  it("should handle multiple circular references", () => {
+    const obj: any = { a: 1, b: { c: 2 } };
+    obj.b.d = obj;
+    obj.b.e = obj.b;
+    obj.e = obj;
+
+    const result = findCircular(obj);
+
+    expect(result).toEqual({
+      a: 1,
+      b: { c: 2, d: "[Circular]", e: "[Circular]" },
+      e: "[Circular]",
+    });
+  });
+
   it("should handle circular references in arrays within objects", () => {
     const obj: any = { a: [1, 2, 3] };
     obj.a.push(obj);
     expect(findCircular(obj)).toEqual({ a: [1, 2, 3, "[Circular]"] });
+  });
+
+  it("should handle nested circular references in arrays withing objects", () => {
+    const obj: any = { a: [1, 2, 3], aaa: { aab: 1, aac: [1, 2, 3] } };
+    const nestedCircular: any = { b: 4, c: 5 };
+    nestedCircular.d = obj;
+
+    obj.a.push(nestedCircular);
+    obj.aaa.aac.push(obj.aaa);
+
+    obj.aaa.aad = obj;
+
+    const result = findCircular(obj);
+
+    expect(result).toEqual({
+      a: [1, 2, 3, { b: 4, c: 5, d: "[Circular]" }],
+      aaa: { aab: 1, aac: [1, 2, 3, "[Circular]"], aad: "[Circular]" },
+    });
+  });
+
+  it("should handle circular across", () => {
+    const obj: any = {
+      a: { a1: 1, a2: 2 },
+      b: { b1: 1, b2: 1 },
+      c: { c1: 1, c2: 2 },
+    };
+
+    // first circular in the A branch
+    obj.a.a3 = obj;
+
+    // second circular in the B branch pointing to the a that has the circular
+    obj.b.b3 = obj.a.a3;
+
+    // thrid circular in the C branch pointing to the b that has the circular to the a
+    obj.c.c3 = obj.b.b3;
+
+    console.log({ result: findCircular(obj) });
   });
 
   it("should handle circular references in objects within arrays", () => {

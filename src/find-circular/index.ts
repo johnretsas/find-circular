@@ -4,7 +4,6 @@ type Configuration = {
 
 export function findCircular(
   obj: unknown,
-  seen = new WeakSet(),
   path = new Set<object>(),
   configuration: Configuration = { replaceToken: "[Circular]" },
 ): unknown {
@@ -21,50 +20,21 @@ export function findCircular(
     unknown
   >;
 
-  if (seen.has(obj)) {
-    path.add(obj);
+  path.add(obj);
 
-    for (const key of [
-      ...Object.keys(obj),
-      ...Object.getOwnPropertySymbols(obj),
-    ]) {
-      result[key] = findCircular(
-        (obj as Record<string | symbol, unknown>)[key],
-        new WeakSet(),
-        path,
-      );
-    }
-
-    path.delete(obj);
-
-    return result;
-  } else {
-    seen.add(obj);
-    path.add(obj);
-
-    for (const key of [
-      ...Object.keys(obj),
-      ...Object.getOwnPropertySymbols(obj),
-    ]) {
-      result[key] = findCircular(
-        (obj as Record<string | symbol, unknown>)[key],
-        seen,
-        path,
-      );
-    }
-
-    path.delete(obj);
-
-    return result;
+  for (const key of [
+    ...Object.keys(obj),
+    ...Object.getOwnPropertySymbols(obj),
+  ]) {
+    result[key] = findCircular(
+      (obj as Record<string | symbol, unknown>)[key],
+      path,
+    );
   }
+
+  path.delete(obj);
+
+  return result;
 }
 
-const testObj = {
-  name: "John",
-  email: "superEmail",
-  address: { number: 10, street: "Armouries Way" },
-} as any;
-
-testObj.person = testObj;
-
-console.log(findCircular(testObj));
+console.log(findCircular(obj));
