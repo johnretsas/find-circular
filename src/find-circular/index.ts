@@ -1,17 +1,15 @@
-type Configuration = {
-  replaceToken?: string;
-};
+import { DEFAULT_CONFIGURATION, type Configuration } from "./config";
 
 export function findCircular(
   obj: unknown,
-  configuration: Configuration = { replaceToken: "[Circular]" },
+  configuration: Configuration = DEFAULT_CONFIGURATION,
 ) {
   return _findCircular(obj, configuration, new Set<object>());
 }
 
 function _findCircular(
   obj: unknown,
-  configuration: Configuration = { replaceToken: "[Circular]" },
+  configuration: Configuration,
   path = new Set<object>(),
 ): unknown {
   if (obj === null || typeof obj !== "object") {
