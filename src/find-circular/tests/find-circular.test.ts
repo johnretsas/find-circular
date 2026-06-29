@@ -1,4 +1,5 @@
-import { findCircular } from "./index";
+import { findCircular } from "./../index";
+import { DEFAULT_REPLACE_TOKEN } from "../config";
 
 describe("findCircular", () => {
   it("should return primitives unchanged", () => {
@@ -12,22 +13,25 @@ describe("findCircular", () => {
     expect(findCircular(obj)).toEqual({ a: 1, b: { c: 2 } });
   });
 
-  it('should replace circular references with "[Circular]"', () => {
+  it("should replace circular references with DEFAULT_REPLACE_TOKEN", () => {
     const obj: Record<any, any> = { a: 1 };
     obj.b = obj;
-    expect(findCircular(obj)).toEqual({ a: 1, b: "[Circular]" });
+    expect(findCircular(obj)).toEqual({ a: 1, b: DEFAULT_REPLACE_TOKEN });
   });
 
   it("should handle nested circular references", () => {
     const obj: any = { a: 1, b: { c: 2 } };
     obj.b.d = obj;
-    expect(findCircular(obj)).toEqual({ a: 1, b: { c: 2, d: "[Circular]" } });
+    expect(findCircular(obj)).toEqual({
+      a: 1,
+      b: { c: 2, d: DEFAULT_REPLACE_TOKEN },
+    });
   });
 
   it("should handle arrays with circular references", () => {
     const arr: any[] = [1, 2];
     arr.push(arr);
-    expect(findCircular(arr)).toEqual([1, 2, "[Circular]"]);
+    expect(findCircular(arr)).toEqual([1, 2, DEFAULT_REPLACE_TOKEN]);
   });
 
   it("should handle duplicate references that are not circular", () => {
@@ -54,7 +58,7 @@ describe("findCircular", () => {
         c: 2,
         d: {
           e: 3,
-          f: "[Circular]",
+          f: DEFAULT_REPLACE_TOKEN,
         },
       },
     });
@@ -68,29 +72,90 @@ describe("findCircular", () => {
 
     expect(result).toEqual({
       a: 1,
-      b: { c: 2, d: "[Circular]" },
-      e: { c: 2, d: "[Circular]" },
+      b: { c: 2, d: DEFAULT_REPLACE_TOKEN },
+      e: { c: 2, d: DEFAULT_REPLACE_TOKEN },
+    });
+  });
+
+  it("should handle multiple circular references", () => {
+    const obj: any = { a: 1, b: { c: 2 } };
+    obj.b.d = obj;
+    obj.b.e = obj.b;
+    obj.e = obj;
+
+    const result = findCircular(obj);
+
+    expect(result).toEqual({
+      a: 1,
+      b: { c: 2, d: DEFAULT_REPLACE_TOKEN, e: DEFAULT_REPLACE_TOKEN },
+      e: DEFAULT_REPLACE_TOKEN,
     });
   });
 
   it("should handle circular references in arrays within objects", () => {
     const obj: any = { a: [1, 2, 3] };
     obj.a.push(obj);
-    expect(findCircular(obj)).toEqual({ a: [1, 2, 3, "[Circular]"] });
+    expect(findCircular(obj)).toEqual({ a: [1, 2, 3, DEFAULT_REPLACE_TOKEN] });
+  });
+
+  it("should handle nested circular references in arrays withing objects", () => {
+    const obj: any = { a: [1, 2, 3], aaa: { aab: 1, aac: [1, 2, 3] } };
+    const nestedCircular: any = { b: 4, c: 5 };
+    nestedCircular.d = obj;
+
+    obj.a.push(nestedCircular);
+    obj.aaa.aac.push(obj.aaa);
+
+    obj.aaa.aad = obj;
+
+    const result = findCircular(obj);
+
+    expect(result).toEqual({
+      a: [1, 2, 3, { b: 4, c: 5, d: DEFAULT_REPLACE_TOKEN }],
+      aaa: {
+        aab: 1,
+        aac: [1, 2, 3, DEFAULT_REPLACE_TOKEN],
+        aad: DEFAULT_REPLACE_TOKEN,
+      },
+    });
+  });
+
+  it("should handle circular across", () => {
+    const obj: any = {
+      a: { a1: 1, a2: 2 },
+      b: { b1: 1, b2: 1 },
+      c: { c1: 1, c2: 2 },
+    };
+
+    // first circular in the A branch
+    obj.a.a3 = obj;
+
+    // second circular in the B branch pointing to the a that has the circular
+    obj.b.b3 = obj.a.a3;
+
+    // thrid circular in the C branch pointing to the b that has the circular to the a
+    obj.c.c3 = obj.b.b3;
+
+    const result = findCircular(obj);
+    expect(result).toEqual({
+      a: { a1: 1, a2: 2, a3: DEFAULT_REPLACE_TOKEN },
+      b: { b1: 1, b2: 1, b3: DEFAULT_REPLACE_TOKEN },
+      c: { c1: 1, c2: 2, c3: DEFAULT_REPLACE_TOKEN },
+    });
   });
 
   it("should handle circular references in objects within arrays", () => {
     const obj: any = { a: [{ b: 1 }, { c: 2 }] };
     obj.a[1].d = obj.a;
     expect(findCircular(obj)).toEqual({
-      a: [{ b: 1 }, { c: 2, d: "[Circular]" }],
+      a: [{ b: 1 }, { c: 2, d: DEFAULT_REPLACE_TOKEN }],
     });
   });
 
   it("should handle self-referencing objects", () => {
     const obj: any = {};
     obj.self = obj;
-    expect(findCircular(obj)).toEqual({ self: "[Circular]" });
+    expect(findCircular(obj)).toEqual({ self: DEFAULT_REPLACE_TOKEN });
   });
 
   it("should handle deep nested circular references", () => {
@@ -101,7 +166,7 @@ describe("findCircular", () => {
         b: {
           c: {
             d: {
-              e: "[Circular]",
+              e: DEFAULT_REPLACE_TOKEN,
             },
           },
         },
@@ -113,9 +178,10 @@ describe("findCircular", () => {
     const shared: any = { x: 42 };
     shared.self = shared;
     const obj = { a: shared, b: shared };
+
     expect(findCircular(obj)).toEqual({
-      a: { x: 42, self: "[Circular]" },
-      b: { x: 42, self: "[Circular]" },
+      a: { x: 42, self: DEFAULT_REPLACE_TOKEN },
+      b: { x: 42, self: DEFAULT_REPLACE_TOKEN },
     });
   });
 
@@ -123,25 +189,28 @@ describe("findCircular", () => {
     const arr: any[] = [1, 2];
     arr.push(arr); // Circular
     arr.push(arr[1]); // Duplicate
-    expect(findCircular(arr)).toEqual([1, 2, "[Circular]", 2]);
+
+    expect(findCircular(arr)).toEqual([1, 2, DEFAULT_REPLACE_TOKEN, 2]);
   });
 
   it("should handle deeply nested arrays with circular references", () => {
     const arr: any[] = [[[[42]]]];
     arr[0][0][0].push(arr); // Circular
-    expect(findCircular(arr)).toEqual([[[[42, "[Circular]"]]]]);
+
+    expect(findCircular(arr)).toEqual([[[[42, DEFAULT_REPLACE_TOKEN]]]]);
   });
 
   it("should handle complex cyclic graphs", () => {
     const obj: any = { a: { b: { c: {} } } };
     obj.a.b.c.d = obj.a.b; // Circular reference
     obj.a.b.c.e = obj.a; // Circular reference
+
     expect(findCircular(obj)).toEqual({
       a: {
         b: {
           c: {
-            d: "[Circular]",
-            e: "[Circular]",
+            d: DEFAULT_REPLACE_TOKEN,
+            e: DEFAULT_REPLACE_TOKEN,
           },
         },
       },
@@ -151,7 +220,10 @@ describe("findCircular", () => {
   it("should handle circular references in arrays of objects", () => {
     const arr: any[] = [{ x: 1 }, { y: 2 }];
     arr[1].z = arr; // Circular reference
-    expect(findCircular(arr)).toEqual([{ x: 1 }, { y: 2, z: "[Circular]" }]);
+    expect(findCircular(arr)).toEqual([
+      { x: 1 },
+      { y: 2, z: DEFAULT_REPLACE_TOKEN },
+    ]);
   });
 
   it("should handle cross-referencing objects", () => {
@@ -159,8 +231,8 @@ describe("findCircular", () => {
     obj.a.b = obj.b; // Cross-reference
     obj.b.a = obj.a; // Cross-reference
     expect(findCircular(obj)).toEqual({
-      a: { b: { a: "[Circular]" } },
-      b: { a: { b: "[Circular]" } },
+      a: { b: { a: DEFAULT_REPLACE_TOKEN } },
+      b: { a: { b: DEFAULT_REPLACE_TOKEN } },
     });
   });
 
@@ -179,7 +251,7 @@ describe("findCircular", () => {
     const obj: any = { [sym]: {} };
     obj[sym].self = obj[sym];
     expect(findCircular(obj)).toEqual({
-      [sym]: { self: "[Circular]" },
+      [sym]: { self: DEFAULT_REPLACE_TOKEN },
     });
   });
 
@@ -189,7 +261,7 @@ describe("findCircular", () => {
     };
     obj.a[0].b.c[0].d = obj.a[0]; // Circular reference
     expect(findCircular(obj)).toEqual({
-      a: [{ b: { c: [{ d: "[Circular]" }] } }],
+      a: [{ b: { c: [{ d: DEFAULT_REPLACE_TOKEN }] } }],
     });
   });
 
@@ -197,5 +269,20 @@ describe("findCircular", () => {
     const func = () => 42;
     const obj = { a: func, b: { c: func } };
     expect(findCircular(obj)).toEqual({ a: func, b: { c: func } });
+  });
+
+  it("should respect the replaceToken", () => {
+    const obj: any = { a: 1, b: { c: 2 } };
+    obj.b.d = obj;
+    obj.b.e = obj.b;
+    obj.e = obj;
+
+    const result = findCircular(obj, { replaceToken: "found circular" });
+
+    expect(result).toEqual({
+      a: 1,
+      b: { c: 2, d: "found circular", e: "found circular" },
+      e: "found circular",
+    });
   });
 });

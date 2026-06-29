@@ -1,6 +1,16 @@
+import { DEFAULT_CONFIGURATION, type Configuration } from "./config";
+
 export function findCircular(
   obj: unknown,
-  seen = new WeakSet(),
+  configuration: Configuration = DEFAULT_CONFIGURATION,
+) {
+  return _findCircular(obj, configuration, new Set<object>());
+}
+
+// We do not want to expose to the user all the input parameters
+function _findCircular(
+  obj: unknown,
+  configuration: Configuration,
   path = new Set<object>(),
 ): unknown {
   if (obj === null || typeof obj !== "object") {
@@ -8,32 +18,27 @@ export function findCircular(
   }
 
   if (path.has(obj)) {
-    return "[Circular]";
+    return configuration.replaceToken;
   }
 
-  if (seen.has(obj)) {
-    const result = (Array.isArray(obj) ? [] : {}) as Record<string | symbol, unknown>;
-    path.add(obj);
-    for (const key of [
-      ...Object.keys(obj),
-      ...Object.getOwnPropertySymbols(obj),
-    ]) {
-      result[key] = findCircular((obj as Record<string | symbol, unknown>)[key], new WeakSet(), path);
-    }
-    path.delete(obj);
-    return result;
-  }
+  const result = (Array.isArray(obj) ? [] : {}) as Record<
+    string | symbol,
+    unknown
+  >;
 
-  seen.add(obj);
-
-  const result = (Array.isArray(obj) ? [] : {}) as Record<string | symbol, unknown>;
   path.add(obj);
+
   for (const key of [
     ...Object.keys(obj),
     ...Object.getOwnPropertySymbols(obj),
   ]) {
-    result[key] = findCircular((obj as Record<string | symbol, unknown>)[key], seen, path);
+    result[key] = _findCircular(
+      (obj as Record<string | symbol, unknown>)[key],
+      configuration,
+      path,
+    );
   }
+
   path.delete(obj);
 
   return result;
