@@ -7,6 +7,7 @@ export function findCircular(
   return _findCircular(obj, configuration, new Set<object>());
 }
 
+// We do not want to expose to the user all the input parameters
 function _findCircular(
   obj: unknown,
   configuration: Configuration,
