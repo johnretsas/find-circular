@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.0] - 2026-06-29
+
+### Added
+- Optional `configuration` argument to `findCircular`, with a `replaceToken` option to customize the value that replaces circular references (defaults to `"[Circular]"`)
 
 ### Fixed
 - Fixed `main` field pointing to nonexistent `index.js` instead of `dist/index.cjs`

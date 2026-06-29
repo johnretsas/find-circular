@@ -53,15 +53,34 @@ console.log(findCircular(arr));
 // [1, 2, 3, "[Circular]"]
 ```
 
+### Custom replacement token
+
+By default circular references are replaced with `"[Circular]"`. Pass a `replaceToken` to use a different value:
+
+```typescript
+const obj = { a: 1 };
+obj.self = obj;
+
+console.log(findCircular(obj, { replaceToken: "<cycle>" }));
+// { a: 1, self: "<cycle>" }
+```
+
 ## API
 
-### `findCircular(obj)`
+### `findCircular(obj, configuration?)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `obj` | `unknown` | The object to process |
+| `configuration` | `Configuration` | Optional. See options below. Defaults to `{ replaceToken: "[Circular]" }`. |
 
-**Returns:** A deep copy of the object with circular references replaced by `"[Circular]"`.
+#### `Configuration`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `replaceToken` | `string` | `"[Circular]"` | Value substituted in place of each circular reference. |
+
+**Returns:** A deep copy of the object with circular references replaced by the configured `replaceToken`.
 
 ## License
 
