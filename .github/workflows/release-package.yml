@@ -18,10 +18,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      # Trusted publishing (OIDC) requires npm >= 11.5.1
+      # Staged publishing via trusted publishing (OIDC) requires npm >= 11.15.0
       - name: Update npm
         run: npm install -g npm@11
 
@@ -34,5 +34,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Publish to npm
-        run: npm publish --access public --provenance
+      # Goes to npm's staging area; approve it on npmjs.com (Staged Packages tab) to go live
+      - name: Stage publish to npm
+        run: npm stage publish --access public --provenance
