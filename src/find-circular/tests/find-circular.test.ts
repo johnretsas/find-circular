@@ -285,4 +285,166 @@ describe("findCircular", () => {
       e: "found circular",
     });
   });
+
+  it("should fall back to the default token when the configuration is partial", () => {
+    const obj: any = { a: 1 };
+    obj.self = obj;
+    expect(findCircular(obj, {})).toEqual({ a: 1, self: DEFAULT_REPLACE_TOKEN });
+  });
+
+  it("should accept non-string replace tokens", () => {
+    const obj: any = { a: 1 };
+    obj.self = obj;
+    expect(findCircular(obj, { replaceToken: null })).toEqual({
+      a: 1,
+      self: null,
+    });
+  });
+
+  it("should call the replacer with the path and target of each circular reference", () => {
+    const obj: any = { a: { b: [1] } };
+    obj.a.b.push(obj.a);
+    obj.self = obj;
+    const found: [unknown[], object][] = [];
+
+    const result = findCircular(obj, {
+      replacer: (path, target) => {
+        found.push([path, target]);
+        return `<${path.join(".")}>`;
+      },
+    });
+
+    expect(result).toEqual({ a: { b: [1, "<a.b.1>"] }, self: "<self>" });
+    expect(found).toEqual([
+      [["a", "b", 1], obj.a],
+      [["self"], obj],
+    ]);
+    expect(found[0][1]).toBe(obj.a);
+  });
+
+  it("should copy dates and regular expressions", () => {
+    const date = new Date(0);
+    const regex = /ab+c/gi;
+    const result: any = findCircular({ date, regex });
+
+    expect(result.date).toBeInstanceOf(Date);
+    expect(result.date).not.toBe(date);
+    expect(result.date.getTime()).toBe(0);
+    expect(result.regex).toBeInstanceOf(RegExp);
+    expect(result.regex).not.toBe(regex);
+    expect(result.regex.source).toBe("ab+c");
+    expect(result.regex.flags).toBe("gi");
+  });
+
+  it("should copy binary data", () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+    const buffer = Buffer.from([4, 5]);
+    const result: any = findCircular({ bytes, buffer });
+
+    expect(result.bytes).toBeInstanceOf(Uint8Array);
+    expect(result.bytes).not.toBe(bytes);
+    expect([...result.bytes]).toEqual([1, 2, 3]);
+    expect(Buffer.isBuffer(result.buffer)).toBe(true);
+    result.buffer[0] = 0;
+    expect(buffer[0]).toBe(4);
+  });
+
+  it("should copy Maps and replace circular references inside them", () => {
+    const map = new Map<unknown, unknown>([["a", { x: 1 }]]);
+    map.set("self", map);
+    map.set(map, "key is circular");
+
+    const result = findCircular(map);
+
+    expect(result).toBeInstanceOf(Map);
+    expect(result).not.toBe(map);
+    expect([...result]).toEqual([
+      ["a", { x: 1 }],
+      ["self", DEFAULT_REPLACE_TOKEN],
+      [DEFAULT_REPLACE_TOKEN, "key is circular"],
+    ]);
+  });
+
+  it("should copy Sets and replace circular references inside them", () => {
+    const set = new Set<unknown>([1, { y: 2 }]);
+    set.add(set);
+
+    const result = findCircular(set);
+
+    expect(result).toBeInstanceOf(Set);
+    expect([...result]).toEqual([1, { y: 2 }, DEFAULT_REPLACE_TOKEN]);
+  });
+
+  it("should preserve class prototypes and accessors", () => {
+    class Point {
+      constructor(
+        public x: number,
+        public parent?: Point,
+      ) {}
+      get double() {
+        return this.x * 2;
+      }
+    }
+    const point = new Point(2);
+    point.parent = point;
+
+    const result = findCircular(point);
+
+    expect(result).toBeInstanceOf(Point);
+    expect(result.double).toBe(4);
+    expect(result.parent).toBe(DEFAULT_REPLACE_TOKEN);
+    expect(Object.keys(result)).toEqual(["x", "parent"]);
+  });
+
+  it("should preserve null-prototype objects", () => {
+    const obj = Object.assign(Object.create(null), { a: 1 });
+    obj.self = obj;
+    const result = findCircular(obj);
+    expect(Object.getPrototypeOf(result)).toBe(null);
+    expect({ ...result }).toEqual({ a: 1, self: DEFAULT_REPLACE_TOKEN });
+  });
+
+  it("should keep error messages and handle circular causes", () => {
+    const error: any = new Error("boom");
+    error.cause = error;
+    error.code = "E_BOOM";
+
+    const result: any = findCircular(error);
+
+    expect(result).toBeInstanceOf(Error);
+    expect(result.message).toBe("boom");
+    expect(result.stack).toBe(error.stack);
+    expect(result.cause).toBe(DEFAULT_REPLACE_TOKEN);
+    expect(result.code).toBe("E_BOOM");
+    expect(Object.keys(result)).toEqual(Object.keys(error));
+  });
+
+  it("should preserve sparse arrays", () => {
+    // eslint-disable-next-line no-sparse-arrays
+    const result = findCircular([1, , 3, ,]);
+    expect(result).toHaveLength(4);
+    expect(1 in result).toBe(false);
+  });
+
+  it("should handle very deeply nested structures without overflowing the stack", () => {
+    const root: any = {};
+    let current = root;
+    for (let i = 0; i < 100_000; i++) {
+      current.next = {};
+      current = current.next;
+    }
+    current.back = root;
+
+    let result: any = findCircular(root);
+    for (let i = 0; i < 100_000; i++) {
+      result = result.next;
+    }
+    expect(result).toEqual({ back: DEFAULT_REPLACE_TOKEN });
+  });
+
+  it("should infer the return type from the input", () => {
+    const result = findCircular({ a: 1 });
+    const a: number = result.a;
+    expect(a).toBe(1);
+  });
 });
