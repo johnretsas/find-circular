@@ -1,12 +1,15 @@
 #!/bin/bash
 set -e
 
-if [ -z "$1" ]; then
-  echo "Usage: ./release-major.sh \"commit message\""
-  exit 1
+# Commit pending changes first (message required only when there are changes)
+if [ -n "$(git status --porcelain)" ]; then
+  if [ -z "$1" ]; then
+    echo "Usage: ./release-major.sh \"commit message\""
+    exit 1
+  fi
+  git add -A
+  git commit -m "$1"
 fi
 
-git add -A
-git commit -m "$1"
 npm version major
 git push && git push --tags

@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0] - 2026-10-28
+
+### Breaking
+- Class instances and null-prototype objects now keep their prototype instead of becoming plain objects
+- `Date`, `RegExp`, `Map`, `Set`, `Error`, `ArrayBuffer`, typed arrays and `Buffer` are copied instead of being returned as `{}`
+- `findCircular` is now generic (`findCircular<T>(obj: T): T`) instead of returning `unknown`
+
+### Added
+- `replacer(path, target)` option to locate circular references or compute custom replacements
+- `replaceToken` accepts any value, not only strings
+- `Configuration`, `CircularReplacer` and `DEFAULT_REPLACE_TOKEN` are exported
+- Circular references inside `Map` and `Set` are detected and replaced
+
+### Fixed
+- A partial configuration (e.g. `{}`) now falls back to the default `"[Circular]"` token instead of `undefined`
+- Very deeply nested objects no longer overflow the call stack
+
 ## [1.2.0] - 2026-06-29
 
 ### Added
